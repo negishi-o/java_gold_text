@@ -156,6 +156,91 @@ boolean hasNext(); //要素があるか判定
 hoge.next(); // 要素を返す
 ```
 
+■独自でソート順序を決めたい  
+以下の2つが活躍出来る  
+
+```java
+java.lang.Comparable;
+java.lang.Comparator;
+```
+
+***<span style="color: red;">Comparable</span>*** を利用する際の注意点  
+⇒Comparableインターフェースを実装していないオブジェクトはNG  
+　クラスの自然順序付けがメイン
+
+実際の使い方は??  
+
+```java
+import java.util.*;
+
+class Hoge {
+    private String name;
+    private Integer old;
+
+    public Hoge(String name, Integer old) {
+        this.name = name;
+        this.old = old;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public Integer getOld() {
+        return this.old;
+    }
+}
+
+class MyNumberRule implements Comparator<Hoge> {
+    public int compare(Hoge hoge1, Hoge hoge2) {
+        return hoge1.getOld().compareTo(hoge2.getOld());
+    }
+}
+
+public class Main {
+public static void main(String[] args) {
+    Hoge hoge1 = new Hoge("まさし", 10);
+    Hoge hoge2 = new Hoge("たかしま", 20);
+    Hoge hoge3 = new Hoge("かねこ", 50);
+    Hoge hoge4 = new Hoge("ジョンソン", 70);
+
+    ArrayList<Hoge> ary = new ArrayList<>();
+    ary.add(hoge1);ary.add(hoge2);ary.add(hoge3);ary.add(hoge4);
+
+    //定義した独自ソートクラスをインスタンス化して利用
+    Collections.sort(ary, new MyNumberRule());
+    for (Hoge obj : ary) {
+        System.out.println(obj.getName() + " " + obj.getOld());
+    }
+
+    //こちらは直接、引数内で独自ソートを定義する技
+    Collections.sort(ary, new Comparator<Hoge>() {
+        public int compare(Hoge hoge1, Hoge hoge2) {
+        return hoge1.getName().length() - hoge2.getName().length();
+        }
+    });
+
+    for (Hoge obj : ary) {
+        System.out.println(obj.getName() + " " + obj.getOld());
+    }
+}
+}
+
+```
+
+↓↓↓実行結果↓↓↓↓
+
+```java
+まさし 10
+たかしま 20
+かねこ 50
+ジョンソン 70
+まさし 10
+かねこ 50
+たかしま 20
+ジョンソン 70
+```
+
 〇ジェネリクス  
 
 使える箇所は以下のみ  
@@ -195,3 +280,6 @@ public <T> T hoge(T value) { retrun value; }
 //型パラメータでもデータ型でもOKと言う感じ
 <型パラメータ extends データ型>
 ```
+
+また、型パラメータはワイルドカード「`?`」も使用可能。  
+何がパラメータ来るか分からない時は、ワイルドカードを使う！！  
