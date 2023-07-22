@@ -283,3 +283,109 @@ public <T> T hoge(T value) { retrun value; }
 
 また、型パラメータはワイルドカード「`?`」も使用可能。  
 何がパラメータ来るか分からない時は、ワイルドカードを使う！！  
+
+## 関数型インターフェースとラムダ式
+
+--------------
+
+■関数型インターフェースとは何か  
+⇒定義されている`メソッドが1つだけのインターフェース`  
+
+また、独自の関数型インターフェースも定義も出来たりする♪  
+但し、以下の法則があるので利用時には注意が必要  
+
+* 単一の抽象メソッドをもつインターフェースとするべし  
+* staticとdefaultメソッドも使ってよし  
+* java.lang.Objectクラスのpublicメソッドは抽象メソッドとして宣言してよし
+* 明示する場合は`@Functionallnterface`を付与する事  
+
+↓↓↓↓こうやって使う↓↓↓↓  
+
+```java
+@FunctionalInterface
+interface MyHogeFuncInter<T> {
+  void foo(T t); //これが単一の抽象メソッド
+  String toString(); //これがObjectクラスのpublicメソッド
+  static void X() {}; //これがstaticメソッド
+  default void Y() {}; //これがdefaultメソッド
+}
+```
+
+関数型インターフェースはこんなにもある!!  
+覚えるのが大変だぁーーーーー(´；ω；`)ｳｩｩ  
+
+* Functoin<T,R>  
+  * R apply(T t)  
+  ⇒引数として ***<span style="color:red">Ｔを受け取り、</span><span style="color:blue">結果とてRを返す</span>***  
+* `Bi`Function<T,U,R>  
+  * R apply(T t, U u)  
+  ⇒引数とし ***<span style="color:red">ＴとU受け取り、</span><span style="color:blue">結果とてRを返す</span>***  
+* Consumer<T`>  
+  * void accept(T t)  
+  ⇒引数として ***<span style="color:red">Tを受け取り終わり</span>***
+* `Bi`Consumer<T,U>  
+  * void accept(T t, U u)  
+  ⇒引数として ***<span style="color:red">TとUを受け取り、終わり</span>***
+* Predicate<T`>  
+  * boolean test(T t)  
+  ⇒引数として ***<span style="color:red">Tを受け取り、</span><span style="color:blue">判定結果を返す</span>***
+* `Bi`Predicate<T,U>  
+  * boolean test(T t, U u)  
+  ⇒引数として ***<span style="color:red">TとUを受け取り、</span><span style="color:blue">判定結果を返す</span>***
+* Supplier<T`>
+  * T get()  
+  ⇒ ***<span style="color:red">何も受け取りません!!</span><span style="color:blue">結果値してTを返す</span>***
+* UnaryOperator<T`>  
+  * T apply(T t)
+  ⇒引数として ***<span style="color:red">Tを受け取り、Tを返す。</span>*** Fuction型を拡張したイメージだね!!
+* `Bi`naryOperator<T`>  
+  * T apply(T t1, T t2)
+  ⇒引数として ***<span style="color:red">Tを2つ受け取り、Tを返す。</span>*** こっちはBiFuction型を拡張したイメージだぞ♪
+
+とりあえず、`Bi`が付いたら引数は2つポイね。  
+<span style="color:red">ラッパークラス</span>を使う必要があるね!!  
+Consumerは引数を貰って、消費（Consumer）  
+Supplierは求められたら、供給（Supplier）  
+
+
+
+■ラムダ式  
+実際に使ってみる  
+
+```java
+import java.util.function.Function;
+
+public class Main {
+    public static void main(String[] args) {
+    //まずは匿名クラス
+    String str1 = new Function<String, String>() {
+      public String apply(String str) {
+        return "Hello" + str;
+      }
+    }.apply("Naruto");
+    System.out.println("匿名クラス" + str1);
+    //ラムダ式（Step1）
+    Function<String, String> f1 = (String str) -> {
+      return "Hello" + str;
+    };
+    String str2 = f1.apply("Gokuuu");
+    System.out.println("ラムダ式ステップ1" + str2);
+    //ラムダ式（鬼省略）
+    Function<String, String> f3 = str -> "Hello" + str;
+    String str3 = f3.apply("Nezuko");
+    System.out.println("ラムダ式鬼省略" + str3);
+    }
+}
+```
+
+↓↓↓↓出力結果↓↓↓↓
+
+```java
+匿名クラスHelloNaruto
+ラムダ式ステップ1HelloGokuuu
+ラムダ式鬼省略HelloNezuko
+```
+
+
+
+
