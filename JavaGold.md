@@ -1,11 +1,8 @@
 # Java
-<br>
 
 ## 例外処理
 
 --------------
-
-<br>
 
 ### ***〇try-with-resourese***
 
@@ -58,7 +55,7 @@ public class Main {
 }
 ```
 
-〇アサーション
+### ***〇アサーション***
 
 ⇒正しい動作を保証する機能
 
@@ -78,7 +75,7 @@ assert boolean hoge : Message; //hogeに条件式でMessageがあると、false�
 
 --------------
 
-〇そもそも、コレクションとジェネリクスとは何か?
+### ***〇そもそも、コレクションとジェネリクスとは何か?***
 
 ⇒<span style="color: yellow;">コレクション</span>は複数のオブジェクトを纏めて取り扱う為の、統一した考え  
 とりあえず、 `List,Set,Queue,Map` がコレクションと覚えておく事  
@@ -113,7 +110,7 @@ for(int i = 0; i<list.size(); i++) {
 }
 ```
 
-〇コレクション
+### ***〇コレクション***
 
 * List  
     * 重複ＯＫで順序付けされる  
@@ -241,7 +238,7 @@ public static void main(String[] args) {
 ジョンソン 70
 ```
 
-〇ジェネリクス  
+### ***〇ジェネリクス***  
 
 使える箇所は以下のみ  
 ・クラス定義及びインターフェース  
@@ -288,7 +285,7 @@ public <T> T hoge(T value) { retrun value; }
 
 --------------
 
-■関数型インターフェースとは何か  
+### ***〇関数型インターフェースとは何か***  
 ⇒定義されている`メソッドが1つだけのインターフェース`  
 
 また、独自の関数型インターフェースも定義も出来たりする♪  
@@ -347,9 +344,52 @@ interface MyHogeFuncInter<T> {
 Consumerは引数を貰って、消費（Consumer）  
 Supplierは求められたら、供給（Supplier）  
 
+ジェネリクス型でないと関数型インターフェースで使えないと思った、  
+そちらの方。。。なんと基本データ型でも利用が出来るのです!!  
 
+■基本データ型での関数型インターフェース
 
-■ラムダ式  
+対応の基本データ型： ***<span style="color:red;">int,double,long</span>***
+×××にintを利用したければ、 ***Int*** として代入する感じ♪  
+
+* ×××Function<R`>
+    * R apply(××× value)  
+* ×××Consumer
+    * void accept(××× value)  
+* ×××Predicate
+    * boolean test(××× value)  
+* ×××Supplier
+    * int get`As×××`()
+* ×××UnaryOperator
+    * int apply`As×××`(××× operand)  
+* ×××BiUnaryOperator
+    * int apply`As×××`(××× left, ××× right)  
+
+更に、引数はこの基本データ型で戻り値はこの基本データ型が良いとかを指定出来たりもする(;д;)   
+
+* To×××Function<R`>
+    * ××× apply`As×××`(R value)  
+* ×××To□□□Function<R`>
+    * □□□ apply`As□□□`(××× value)  
+
+■関数型インターフェースの合成
+
+なんと朗報で関数型インターフェースでAnd的な事も出来てしまう...
+覚えるPointがいっぱいだぁーーーーーーーーーー(´_ゝ｀)
+
+* andThen
+⇒ ***<span style="color:red;">A実行した後に</span><span style="color:blue;">Bを実施</span>*** （A.andThen(B)）
+* compose
+⇒ ***<span style="color:blue;">B実行した後に</span><span style="color:red;">Aを実施</span>*** （A.compose(B)）
+* and
+⇒AとBを満たすか判定（A.and(B)）
+* or
+⇒AとBのどちらかを満たすか判定（A.or(B)）
+* negate
+⇒Aの判定をひっくり返す（A.negate()）
+
+### ***〇ラムダ式***  
+
 実際に使ってみる  
 
 ```java
@@ -386,6 +426,207 @@ public class Main {
 ラムダ式鬼省略HelloNezuko
 ```
 
+ここから複雑になるが、ラムダ式を使う上でメソッド参照が使われる  
+メソッド参照は3種類あって、`staticメソッド参照、インスタンスメソッド参照、コンストラクタ参照`
+
+↓↓↓↓使い方↓↓↓↓
+
+```java
+// *~*~~*~~*~まずはstaticメソッド参照*~*~~*~~*~
+// ①戻り値のIntegerのメソッドを利用
+Function<String, Integer> f = str -> Integer.perseInt(str);
+// ②より↑をコンパクトにすると
+Function<String, Integer> f = Integer::perseInt;
+
+// ③はメソッド参照は利用しない場合
+Comparator<Integer> comp = (x, y) -> Integer.compare(x, y);
+// ④は↑をコンパクトにすると
+Comparator<Integer> comp = Integer::compare;
+System.out.println(comp.compare(1,2));
+
+// *~*~~*~~*~インスタンスメソッド参照*~*~~*~~*~
+// ⑤はインスタンスメソッド参照を利用しない場合
+UnaryOperator<String> obj = s -> s.toUpperCase();
+// これはＮＧ
+UnaryOperator<String> obj = s.toUpperCase()　// ←sという謎変数がいきなり来てるから
+// ⑥は⑤をコンパクトにすると
+UnaryOperator<String> obj = String::toUpperCase;
+System.out.println(obj.apply("takashi"));
+
+// ⑦はインスタンスメソッド参照を利用しない場合
+BiFunction<String, Integer, Character> ramu = (s, i) -> i.charAt(i);
+// ⑧は↑をコンパクトにすると
+BiFunction<String, Integer, Character> hoge = String::chartAt;
+System.out.println(hoge.apply("html", 3));
+//但し、これはＮＣ
+BiFunction<Integer, String, Character> hogeNg = String::chartAt; //←第一引数と第二引数を受け取るので、第一引数が優先されるので判定出来ない
+
+// *~*~~*~~*~コンストラクタ参照*~*~~*~~*~
+public class Main {
+  public static void main(String[]) {
+    // ⑨はコンストラクタ参照を利用しない場合
+    Supplier<Foo> obj = () -> new Foo();
+    // ⑩は↑をコンパクトにすると
+    Supplier<Foo> obj = Foo::new;
+
+    // ⑪はコンストラクタ参照を利用しない場合
+    Function<Integer, Foo> obj2 = i -> new Foo(i);
+    // ⑫は↑をコンパクトにすると
+    Function<Integer, Foo> obj2 = Foo::new;
+    System.out.println(obj.apply(2).a);
+  }
+}
+class Hoge {
+  int a = 0;
+  Hoge() { }
+  Hoge(int a) { this.a = a;}
+}
+```
+
+### ***〇ストリームAPI***  
+
+* 中間操作
+    * Stream<T'> filter(Predicate<? super T> predicate)
+    ⇒ 指定された条件に一致するものを返す
+    * Stream<T'> distinct()
+    ⇒ 重複を除いた値を返す
+    * Stream<T'> limit(long maxSize)
+    ⇒ mazSize以内の要素数と言えば良いか分からないが、返す。
+    * Stream<T'> skip(long n)
+    ⇒ 先頭からn個までは取り除いた要素を返す
+    * <R'> Stream<R'> map(Function<? super T, ? extends R> mapper)
+    ⇒ ***<span style="color: red;">指定された関数を実行したものを返す</span>***
+    * <R'> Stream<R'> `flat`Map(Function<? super T, ? extends Stream<? extends R>> mapper)
+    ⇒ 指定された関数を実行した ***<span style="color: red;">複数の結果を纏めたもの</span>*** を返す
+    * Stream<T'> sorted()
+    ⇒ 自然順序に従ってソートした結果を返す
+    * Stream<T'> sorted(`Comparator<? super T> comparator`)
+    ⇒ ***<span style="color: red;">指定されたComparatorに従って</span>*** ソートした結果を返す
+    * Stream<T'> peek(Consumer<? super T> action)
+    ⇒ ストリーム内の値を確認した時にデバックコードで使うやつ!!
 
 
+* 終端操作
+    * boolean `all`Match(Predicate<? super T> predicate)
+    ⇒ ***<span style="color: red;">全ての要素</span>*** が条件に一致するか判定
+    * boolean `any`Match(Predicate<? super T> predicate)
+    ⇒ ***<span style="color: red;">いずれかの要素</span>*** が条件に一致するか判定
+    * boolean `none`Match(Predicate<? super T> predicate)
+    ⇒ ***<span style="color: red;">どの要素も</span>*** が条件に一致していないか判定
+    * long count()
+    ⇒数を返す
+    * Optional<T`> find`Any`()
+    ⇒ ***<span style="color: red;">いずれかの要素</span>*** を返す
+    * Optional<T`> find`First`()
+    ⇒ ***<span style="color: red;">最初の要素</span>*** を返す
+    * void forEach(Consumer<? super T> action)
+    ⇒ 各要素にactionを実行
+    * Optional<T`> min(Consumer<? super T> comparator)
+    ⇒最小の要素を返す
+    * Optional<T`> max(Consumer<? super T> comparator)
+    ⇒最大の要素を返す
+    * T reduce(T identity, BinaryOperator<T> accumulator)
+    ⇒ ***<span style="color: red;">要素を累積して</span>*** 返す
+       * `Optional`<T'> reduce(BinaryOperator<T'> accumulator)
+       ⇒ ***<span style="color: blue;">戻り値がOptional</span>*** を返すものもある
+    * Object[] toArray()
+    ⇒ 要素を含む配列を返す
 
+■ Optionalクラスとは??
+1つの値を保存しているクラス。。。クラスにnullで処理を進めた時にいざ、getして値を取り出した際に  
+ヌルポが発生してわぁーーーてなるが、Optionalクラスを使えばnullかどうか判定して値をどう処理するか可能になる。
+
+↓↓↓↓メソッド一覧(出てきそうなものだけ抜粋)↓↓↓↓
+* boolean isPresent()
+⇒値が存在するかチェック出来る
+* void `if`Present(Consumer<? super T> consumer)
+⇒ ***<span style="color: red;">値があれば、値を出力して無ければ何もしない</span>*** 
+* T orElse(T other)
+⇒値があれば返します
+* T orElseGet(Supplier<? extends T> other)
+⇒値があれば、処理をして返します
+
+また、基本データ型でもOptionalクラスは利用出来て、渡されるストリームによって終端操作の利用が使い方が分岐される。。。
+
+* Streamで来た時
+  ⇒ 戻り値はOptional<T'>で行き
+  終端操作は`findAny,findFirst,max,min`が利用出来る。
+* IntStreamで来た時
+  ⇒ 戻り値はOptional ***<span style="color: red;">Double</span>*** で行く場合は
+  終端操作は`avarage`が利用出来る。
+  ⇒ 戻り値はOptional ***<span style="color: red;">Int</span>*** で行く場合は
+  終端操作は`findAny,findFirst,max,min`が利用出来る。
+  ⇒ 戻り値は ***<span style="color: blue;">int</span>*** で行く場合は
+  終端操作は`sum`が利用出来る。
+
+↓↓↓↓終端操作を使ってみた↓↓↓↓
+
+```java
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.function.*;
+
+public class Main { 
+    public static void main(String[] args) {
+        List<String> data = Arrays.asList("kimura","ai","taka");
+        //全て要素に4文字以上で存在するか確認
+        boolean result1 = data.stream().allMatch(s -> s.length() >= 4);
+        //いずれかの要素に4文字が存在するか確認
+        boolean result2 = data.stream().anyMatch(s -> s.length() == 4);
+        //全ての要素が2文字以下ではない事を確認
+        boolean result3 = data.stream().noneMatch(s -> s.length() == 2);
+
+        System.out.println(result1);
+        System.out.println(result2);
+        System.out.println(result3);
+
+        System.out.println("~*~*~*~*~*~*forEach()~*~*~*~*");
+        // 要素の展開と要素数を確認
+        data.stream().forEach(System.out::println);
+        System.out.println(data.stream().count());
+
+        System.out.println("~*~*~*~*~*~*reduce()~*~*~*~*");
+        // 要素を全て合算する
+        Stream<Integer> stream = Stream.of(45, 5, 50);
+        //合算する際の初期値
+        int start = 0;
+        int result4 = stream.reduce(start, (a, b) -> a + b);
+        System.out.println(result4);
+
+        //こっちは同じreduceメソッドだけど、リターン値が別ver.
+        Stream<Integer> stream2 = Stream.of(45, 5, 50);
+        BinaryOperator<Integer> operator = (a, b) -> a + b;
+        Optional<Integer> result5 = stream2.reduce(operator);
+        result5.ifPresent(System.out::println);
+
+        System.out.println("~*~*~*~*~*~*max()~*~*~*~*");
+        List<Integer> data2 = Arrays.asList(89, 56, 77);
+        //max内にComparatorクラスのstaticメソッドが使うので注意!!
+        Optional<Integer> result6 = 
+                data2.stream().max(Comparator.naturalOrder());
+        result6.ifPresent(System.out::println);
+
+
+    }
+}
+
+```
+
+↓↓↓↓コンパイル結果↓↓↓↓
+
+```java
+$ java src/01/Main.java 
+false
+true
+false
+~*~*~*~*~*~*forEach()~*~*~*~*
+kimura
+ai
+taka
+3
+~*~*~*~*~*~*reduce()~*~*~*~*
+100
+100
+~*~*~*~*~*~*max()~*~*~*~*
+89
+```
