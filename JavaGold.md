@@ -505,6 +505,87 @@ class Hoge {
     * Stream<T'> peek(Consumer<? super T> action)
     ⇒ ストリーム内の値を確認した時にデバックコードで使うやつ!!
 
+↓↓↓↓中間操作を使ってみた↓↓↓↓
+```java
+import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.function.*;
+
+public class Main {
+    public static void main(String[] args) {
+        //先頭がaから始まるものをソート
+        Stream<String> stream1 = Stream.of("ami", "ao", "mia");
+        stream1.filter(s -> s.startsWith("a"))
+                .forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //重複を削除
+        Stream<String> stream2 = Stream.of("ami", "ao", "ao");
+        stream2.distinct()
+                .forEach(x -> System
+                        .out.print(x + " "));
+        System.out.println();
+
+        //limitで10まで作成
+        IntStream.iterate(1, n -> n + 1)
+                .limit(10L)
+                .forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //skipで5までの数値をスキップ
+        IntStream.rangeClosed(1, 10)
+                .skip(5L)
+                .forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //mapでStringからStringの操作
+        Stream<String> stream1a = Stream.of("naoki", "aiko", "ami");
+        Stream<String> stream1b = stream1a.map(s -> s.toUpperCase());
+        stream1b.forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //mapでStringからInt型への操作
+        Stream<String> stream2a = Stream.of("naoki", "aiko", "ami");
+        Stream<Integer> stream2b = stream2a.map(s -> s.length());
+        stream2b.forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //flatMapで1要素に対して複数の結果を操作
+        List<Integer> data1 = Arrays.asList(10);
+        List<Integer> data2 = Arrays.asList(50,80);
+        List<Integer> data3 = Arrays.asList(100, 300, 500);
+
+        List<List<Integer>> dataList = 
+                Arrays.asList(data1, data2, data3);
+        dataList.stream()
+                .flatMap(data -> data.stream())
+                .forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+        //ソートを使うけど、Comparatorオブジェクトを使うVer.
+        Stream.of("naoki", "aiko", "ami")
+                .sorted(Comparator.reverseOrder())
+                .forEach(x -> System.out.print(x + " "));
+        System.out.println();
+
+    }
+}
+
+```
+
+↓↓↓↓実行結果
+```java
+$ java ./src/04java/Main.java
+ami ao 
+ami ao
+1 2 3 4 5 6 7 8 9 10 
+6 7 8 9 10
+NAOKI AIKO AMI 
+5 4 3
+10 50 80 100 300 500 
+naoki ami aiko 
+```
 
 * 終端操作
     * boolean `all`Match(Predicate<? super T> predicate)
@@ -562,9 +643,8 @@ class Hoge {
 ↓↓↓↓終端操作を使ってみた↓↓↓↓
 
 ```java
-import java.util.*;
-import java.util.stream.Stream;
-import java.util.function.*;
+
+
 
 public class Main { 
     public static void main(String[] args) {
