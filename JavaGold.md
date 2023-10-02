@@ -1,8 +1,26 @@
 # Java
 
+### アノテーション
+
+--------------
+
+* @Deprecated
+⇒非推奨のコンストラクタ、メソッド、変数などに付与する。<br>
+コンパイル時に警告メッセージは表示される
+* @SuppressWarnings
+⇒引数に`unchecked`でList<String>の代わりにListなど型の使用に関する非推奨の利用をコンパイル時に警告なしで可能<br>
+引数に`deperecation`で@Deprecatedで記載した箇所をコンパイル時に警告なしで可能に!! ***<span style="color: red">Deprecatedと2セットで使用と覚えよう！！</span>*** 
 ## 例外処理
 
 --------------
+
+### ***〇マルチキャスト***
+
+・catch内で`catch(Exception | AException e)`と例外処理を複数キャッチも可能。
+
+但し、キャッチ内に ***<span style="color: red">継承関係の例外はNG</span>*** ⇒`catch(IOException | FileNotFoundException e)`
+
+他にも、`catch(Exception | AException e)`の受け取ったeはfinalになるので、再代入は禁止!!
 
 ### ***〇try-with-resourese***
 
@@ -644,8 +662,6 @@ naoki ami aiko
 
 ```java
 
-
-
 public class Main { 
     public static void main(String[] args) {
         List<String> data = Arrays.asList("kimura","ai","taka");
@@ -709,4 +725,255 @@ taka
 100
 ~*~*~*~*~*~*max()~*~*~*~*
 89
+```
+
+### ***〇モジュールシステム***  
+
+■コマンドリストはこちら♪
+
+|コマンド|内容|
+|----|----|
+|-d|クラスファイルの生成場所を指定|
+|-p(--module-path)|モジュールが格納されている場所を指定|
+|-m(-module)|ルートモジュールを指定(main含むクラスがある所)|
+|-list-modules|参照可能なモジュールを出力|
+|-d(-describe-module)|モジュール記述子の情報を出力|
+|--show-module-resolution|モジュールの解決の様子を出力|
+
+■こっちはjlinkコマンドリスト
+※カスタムコマンドが生成出来るようになる便利もの
+
+|コマンド|内容|
+|----|----|
+|--add-modules|イメージに追加するモジュールを指定|
+|-c(--compress)|リソースの圧縮を有効化<br>0:圧縮なし<br>1:定数文字の共有<br>2:ZIP|
+|--launcher command=module|モジュールのランチャー・コマンド名<br>`commandに自分が指定したいのに置き換えて使う感じ`|
+|-output|出力ディレクトリ|
+
+■こちらはmodule-info.javaに使う定義リスト
+
+* requires <必要なモジュール名>
+* requires transitive <間接エクスポートするモジュール名>
+* exports <公開するモジュール名>
+* provides <サービス> with <サービスプロバイダ>
+⇒インターフェースとか抽象クラスを<サービス>に記載するイメージ
+* use <サービス>
+⇒providesで指定した<サービス>を指定するイメージ!!
+
+### ***〇並列処理***  
+
+■スレッドとは何ですか?
+処理の最小単位であり、このスレッドが複数存在し、並列処理で実現するのがマルチスレッドです( ..)φメモメモ
+
+実際に使う際は、`Thread`と`Runnable`がまずは基本。
+スレッドが終了したものを再度、呼び出すと ***<span style="color: blue;">llegaThreadStateException</span>*** が発生するので使う時注意が必要だ!!
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        //こっちはThreadを利用した時の記述
+        ThreadA a = new ThreadA();
+        a.start();
+
+        //Runableはコンパクトに記述が出来る
+        new Thread(
+            () -> {
+                System.out.println("Hey!!");
+            }
+        ).start();
+    }
+}
+
+class ThreadA extends Thread {
+    public void run() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println("A:" + i);
+        }
+    }
+}
+
+```
+
+↓↓↓↓実行結果↓↓↓↓
+
+```java
+$ java 04/Main.java 
+Hey!!
+A:0
+A:1
+A:2
+A:3
+A:4
+```
+
+■スレッドを制御
+Threadクラスにはいくつかメソッドがあるので、一覧はこちらは♪♪
+
+* static void sleep(long millis) throws InterruptedException
+⇒呼び出しのスレッドを指定時間、停止可能
+* final void  ***<span style="color: blue;">join</span>*** () throws InterruptedException
+⇒実行中のスレッドが終了するまで ***<span style="color: blue;">待機</span>*** 
+* static void ***<span style="color: blue;">yield</span>*** ()
+⇒実行しているスレッドを一時的に止めて、 ***<span style="color: blue;">他のスレッドを実行</span>*** 
+* void ***<span style="color: red;">interrupt</span>*** ()
+⇒ ***<span style="color: red;">休止中のスレッドに割り込みを入れる。</span>***
+
+```java
+
+public class Main {
+    public static void main(String[] args) {
+        Thread threadA  = new Thread(() -> {
+            System.out.println("ThreadA : sleep Start");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                System.out.println("ThreadA : reborn");
+            }
+            System.out.println("ThreadA : 再開しました");
+        });
+        threadA.start();
+
+        try {
+            System.out.println("main : sleep Start");
+            Thread.sleep(2000);
+            System.out.println("main : sleep end");
+            //割り込みをここで入れる!!
+            threadA.interrupt();
+        } catch (InterruptedException e) {
+            System.out.println("main : 割り込みをしました");
+        }
+    }
+}
+
+```
+
+↓↓↓↓実行結果↓↓↓↓
+
+```java
+$ java -Dfile.encoding=utf-8 05/Main.java 
+main : sleep Start
+ThreadA : sleep Start
+main : sleep end
+ThreadA : reborn
+ThreadA : 再開しました
+```
+
+ただ、これだけでは排他制御と同期制御が出来ないので、
+ここで ***<span style="color: red;">synchronized</span>*** を対象の処理に追加することで
+追加した個所はロック状態を保有が出来る。ただ、これは排他制御の機能を付与するだけなので、
+合わせて同期制御も利用すること。
+
+■同期処理のメソッドはこちら！！
+
+* final void wait() throws `InterruptedException`
+⇒現在のスレッドを待機
+* final void wait(logn timeout) throws `InterruptedException`
+⇒指定された時間まで、現在のスレッドを待機
+* final void ***<span style="color: red;">notify</span>*** ()
+⇒待機中のスレッドを ***<span style="color: red;">1つ再開</span>*** させる
+* final void ***<span style="color: red;">notifyAll</span>*** ()
+⇒待機中のスレッドを ***<span style="color: red;">全て再開</span>*** させる
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Share share = new Share();
+        ThreadA threadA = new ThreadA(share);
+        ThreadB threadB = new ThreadB(share);
+        threadA.start();
+        threadB.start();
+    }
+}
+
+    class Share {
+        private int a = 0;
+        private String b;
+
+        public synchronized void set() {
+            while (a != 0) {
+                try {
+                    //一旦止める
+                    wait();
+                } catch (InterruptedException e) {
+                }
+            }
+            //止まっているprintメソッドを動かす
+            notify();
+            a++;
+            b = "Hello";
+            System.out.println("set() a:" + a + " b:" + b);
+        }
+
+        public synchronized void print() {
+            while (b == null) {
+                try {
+                    //一旦止める
+                    wait();
+                } catch (InterruptedException e) {
+                }
+            }
+            //止まっているAを動かす
+            notify();
+            a--;
+            b = null;
+            System.out.println("print() a:" + a + " b:" + b);
+        }
+
+    }
+    
+    class ThreadA extends Thread {
+        private Share share;
+
+        public ThreadA(Share share) {
+            this.share = share;
+        }
+
+        public void run() {
+            for (int i = 0; i < 10; i++) {
+                share.set();
+            }
+        }
+    }
+    
+    class ThreadB extends Thread {
+        private Share share;
+
+        public ThreadB(Share share) {
+            this.share = share;
+        }
+
+        public void run() {
+            for(int i =0; i < 10; i++) {
+                share.print();
+            }
+        }
+    }
+
+```
+
+↓↓↓↓動かした結果↓↓↓↓
+※交互にスレッド処理が行われているー
+
+```java
+$ java 06/Main.java
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello 
+print() a:0 b:null
+set() a:1 b:Hello 
+print() a:0 b:null
+set() a:1 b:Hello 
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
+set() a:1 b:Hello
+print() a:0 b:null
 ```
