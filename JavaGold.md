@@ -1,5 +1,66 @@
 # Java
 
+
+### クラスとインターフェース
+
+-------------------
+
+### ***〇インナークラス、匿名クラスの掟***
+
+・ ***<span style="color: red">staticで修飾したインナークラスは、staticのみを参照すべし</span>***
+
+```java
+
+public class Sample {
+  private String Msg = "Hey!";
+  //↑↑staticクラスから取得したければ、ここをstaticに変える！！
+
+  static class Call {
+    public void getMsg() {
+      System.out.println(Msg);
+    }
+  }
+}
+
+```
+
+・ ***<span style="color: red">staticで修飾していないインナークラスで、staticの利用は控えるべし</span>***
+
+```java
+
+public class Sample {
+
+  class Call {
+    private static String Msg;
+    //↑↑Callクラスがデフォルト修飾子なので、staticはNG！！！
+    public void getMsg() {
+      System.out.println(Msg);
+    }
+  }
+}
+
+```
+
+・ ***<span style="color: red">匿名クラスでのコンストは禁ずる</span>***
+
+```java
+
+public class Sample {
+
+  public static void main(String[] args) {
+    Object obj = new Object() {
+
+      //↓↓匿名クラスでのコンストはダメ！！
+      public Object(String val) {
+        System.out.println(val);
+      }
+    }
+  }
+
+}
+
+```
+
 ### アノテーション
 
 --------------
@@ -262,6 +323,8 @@ public static void main(String[] args) {
 ・クラス定義及びインターフェース  
 
 ```java
+
+
 
 //インターフェースにジェネリクスを利用する事で
 interface Hoge<T> { void method(T t);}
@@ -976,4 +1039,91 @@ set() a:1 b:Hello
 print() a:0 b:null
 set() a:1 b:Hello
 print() a:0 b:null
+```
+
+### ***〇Atomicクラス~原子性を強力に込めて~***  
+
+`synchronized`を使った排他制御が強力であり、パフォーマンスを下がる場合もあるので、原子性が担保されたAtomicパッケージが使われる。
+
+使い方はこんな感じ
+
+```java
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class Main {
+    public static void main(String[] args) {
+        Valu val = new AtomicValu();
+
+        ExecutorService exec = Executors.newFixedThreadPool(2);
+        exec.submit(new Task(val));
+        exec.submit(new Task(val));
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println(val.get());
+        exec.shutdown();
+    }
+}
+```
+
+```java
+public class Valu {
+    private int num = 0;
+
+    public void add(int num) {
+        this.num = num;
+    }
+
+    public int get() {
+        return this.num;
+    }
+}
+
+```
+
+```java
+public class Task implements Runnable {
+    private Valu val;
+
+    public Task(Valu val) {
+        this.val = val;
+    }
+
+    @Override
+    public void run() {
+        this.add(100);
+    }
+
+    private void add(int num) {
+        this.val.add(num);
+    }
+}
+
+```
+
+↓↓↓↓アトミック利用↓↓↓↓
+
+```java
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class AtomicValu extends Valu{
+    private AtomicInteger num = new AtomicInteger(0);
+    //↑↑今回はIntegerがAtomic〇〇に指定
+
+    public void add(int num) {
+        this.num.addAndGet(num);
+        //↑↑これで前のスレッド処理が終わったら、加算されるようになる
+        
+    }
+
+    public int get() {
+        return this.num.intValue();
+    }
+}
+
 ```
