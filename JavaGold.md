@@ -1127,3 +1127,67 @@ public class AtomicValu extends Valu{
 }
 
 ```
+
+
+### ***〇ローカライズ***  
+
+```java
+import java.util.*;
+import java.io.*;
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+        //コンストで言語、国、派生の順で指定するパターン
+        Locale locale = new Locale("ja", "JP", "JP");
+        System.out.println("国名" + locale.getCountry());
+        System.out.println("言語" + locale.getLanguage());
+
+        //定数で指定するパターン
+        Locale locale2 = Locale.US;
+        System.out.println("国名" + locale2.getCountry());
+        System.out.println("言語" + locale2.getLanguage());
+
+        System.out.println("IETE言語" + locale.toLanguageTag());
+    
+        Locale locale3 = new Locale.Builder()
+                .setLanguage("jp")
+                .setRegion("JP")
+                .setScript("Japn")
+                .build();
+        System.out.println("国名" + locale3.getCountry());
+        System.out.println("言語" + locale3.getLanguage());
+
+        //プロパティファイルを取得
+        Properties prop = new Properties();
+        prop.load(new FileReader("sample.properties"));
+
+        //一覧表示の仕方（part1）
+        Set keys = prop.keySet();
+        for (Object key : keys) {
+            System.out.println(prop.get(key));
+        }
+
+        //一覧表示の仕方（part2）
+        System.out.println("----------------------");
+        prop.forEach((k, v) -> System.out.println(k + "=" + v));
+        
+        //一覧表示の仕方（part3）
+        System.out.println("----------------------");
+        prop.list(System.out);
+
+        //対象keyだけの表示
+        System.out.println("----------------------");
+        System.out.println(prop.getProperty("name"));
+
+
+        //環境の言語に沿って、プロパティファイルの取得方法
+        //第二引数に言語指定で、変更可能
+        System.out.println("----------------------");
+        ResourceBundle resource = ResourceBundle.getBundle("sample", Locale.JAPAN);
+        System.out.println(resource.getString("bye"));
+    }
+    
+}
+
+```
